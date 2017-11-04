@@ -5,6 +5,8 @@ require 'bigdecimal'
 module AnnotateModels
   TRUE_RE = /^(true|t|yes|y|1)$/i
 
+  DOUBLE_BYTES_CHARACTERS_RE = /\p{Han}|\p{Katakana}|\p{Hiragana}|\p{Hangul}|\p{InCJK_Symbols_and_Punctuation}|\p{InHalfwidth_and_Fullwidth_Forms}/
+
   # Annotate Models plugin use this header
   COMPAT_PREFIX    = '== Schema Info'.freeze
   COMPAT_PREFIX_MD = '## Schema Info'.freeze
@@ -311,7 +313,7 @@ module AnnotateModels
           type_remainder = (md_type_allowance - 2) - col_type.length
           info << (sprintf("# **`%s`**%#{name_remainder}s | `%s`%#{type_remainder}s | `%s`", col_name, " ", col_type, " ", attrs.join(", ").rstrip)).gsub('``', '  ').rstrip + "\n"
         else
-          column_size = max_size - col_name.to_s.chars.count { |char| char =~ /\p{Han}|\p{Katakana}|\p{Hiragana}|\p{Hangul}/ }
+          column_size = max_size - col_name.to_s.chars.count { |char| char =~ DOUBLE_BYTES_CHARACTERS_RE }
           info << sprintf("#  %-#{column_size}.#{column_size}s:%-#{bare_type_allowance}.#{bare_type_allowance}s %s", col_name, col_type, attrs.join(", ")).rstrip + "\n"
         end
       end
@@ -890,7 +892,7 @@ module AnnotateModels
     def max_schema_info_width(klass, options)
       if with_comments?(klass, options)
         max_size = klass.columns.map do |column|
-          column_comment_size = column.comment ? column.comment.to_s.chars.reduce(0) { |memo, char| memo + (char =~ /\p{Han}|\p{Katakana}|\p{Hiragana}|\p{Hangul}/ ? 2 : 1) } : 0
+          column_comment_size = column.comment ? column.comment.to_s.chars.reduce(0) { |memo, char| memo + (char =~ DOUBLE_BYTES_CHARACTERS_RE ? 2 : 1) } : 0
           column.name.size + column_comment_size
         end.max || 0
         max_size += 2
