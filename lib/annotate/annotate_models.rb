@@ -311,7 +311,7 @@ module AnnotateModels
           type_remainder = (md_type_allowance - 2) - col_type.length
           info << (sprintf("# **`%s`**%#{name_remainder}s | `%s`%#{type_remainder}s | `%s`", col_name, " ", col_type, " ", attrs.join(", ").rstrip)).gsub('``', '  ').rstrip + "\n"
         else
-          column_size = max_size - col_name.chars.count { |char| char =~ /\p{Han}|\p{Katakana}|\p{Hiragana}|\p{Hangul}/ }
+          column_size = max_size - col_name.to_s.chars.count { |char| char =~ /\p{Han}|\p{Katakana}|\p{Hiragana}|\p{Hangul}/ }
           info << sprintf("#  %-#{column_size}.#{column_size}s:%-#{bare_type_allowance}.#{bare_type_allowance}s %s", col_name, col_type, attrs.join(", ")).rstrip + "\n"
         end
       end
@@ -890,7 +890,7 @@ module AnnotateModels
     def max_schema_info_width(klass, options)
       if with_comments?(klass, options)
         max_size = klass.columns.map do |column|
-          column_comment_size = column.comment ? column.comment.chars.reduce(0) { |memo, char| memo + (char =~ /\p{Han}|\p{Katakana}|\p{Hiragana}|\p{Hangul}/ ? 2 : 1) } : 0
+          column_comment_size = column.comment ? column.comment.to_s.chars.reduce(0) { |memo, char| memo + (char =~ /\p{Han}|\p{Katakana}|\p{Hiragana}|\p{Hangul}/ ? 2 : 1) } : 0
           column.name.size + column_comment_size
         end.max || 0
         max_size += 2
